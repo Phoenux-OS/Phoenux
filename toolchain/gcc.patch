@@ -1,0 +1,202 @@
+diff -urN --no-dereference gcc-9.2.0/config.sub gcc-9.2.0-patched/config.sub
+--- gcc-9.2.0/config.sub	2019-01-03 12:28:27.000000000 +0100
++++ gcc-9.2.0-patched/config.sub	2019-09-26 03:38:21.547019503 +0200
+@@ -1363,7 +1363,7 @@
+ 	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
+ 	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
+ 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+-	     | midnightbsd* | amdhsa* | unleashed* | emscripten*)
++	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | phoenux*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	qnx*)
+diff -urN --no-dereference gcc-9.2.0/fixincludes/mkfixinc.sh gcc-9.2.0-patched/fixincludes/mkfixinc.sh
+--- gcc-9.2.0/fixincludes/mkfixinc.sh	2016-06-21 23:57:20.000000000 +0200
++++ gcc-9.2.0-patched/fixincludes/mkfixinc.sh	2019-09-26 03:39:02.657016633 +0200
+@@ -12,6 +12,7 @@
+ # Check for special fix rules for particular targets
+ case $machine in
+     i?86-*-cygwin* | \
++    i?86-*-phoenux* | \
+     i?86-*-mingw32* | \
+     x86_64-*-mingw32* | \
+     powerpc-*-eabisim* | \
+diff -urN --no-dereference gcc-9.2.0/gcc/config/phoenux.h gcc-9.2.0-patched/gcc/config/phoenux.h
+--- gcc-9.2.0/gcc/config/phoenux.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-9.2.0-patched/gcc/config/phoenux.h	2019-09-26 03:41:15.717007346 +0200
+@@ -0,0 +1,25 @@
++#undef TARGET_PHOENUX
++#define TARGET_PHOENUX 1
++
++#undef LIB_SPEC
++#define LIB_SPEC "-lc -lm"
++
++#undef STARTFILE_SPEC
++#define STARTFILE_SPEC "%{!shared:crt0.o%s} crti.o%s %{shared:crtbeginS.o%s;:crtbegin.o%s}"
++
++#undef ENDFILE_SPEC
++#define ENDFILE_SPEC "%{shared:crtendS.o%s;:crtend.o%s} crtn.o%s"
++
++#define GNU_USER_LINK_EMULATION32 "elf_i386"
++
++#define GNU_USER_DYNAMIC_LINKER32 "/lib/ld.so"
++
++#undef TARGET_OS_CPP_BUILTINS
++#define TARGET_OS_CPP_BUILTINS() \
++   do {                                \
++       builtin_define ("__phoenux__");      \
++       builtin_define ("__unix__");      \
++       builtin_assert ("system=phoenux");   \
++       builtin_assert ("system=unix");   \
++       builtin_assert ("system=posix");   \
++   } while(0);
+diff -urN --no-dereference gcc-9.2.0/gcc/config.gcc gcc-9.2.0-patched/gcc/config.gcc
+--- gcc-9.2.0/gcc/config.gcc	2019-08-03 22:16:22.000000000 +0200
++++ gcc-9.2.0-patched/gcc/config.gcc	2019-09-26 03:46:48.937984088 +0200
+@@ -836,6 +836,15 @@
+   target_has_targetcm=yes
+   target_has_targetdm=yes
+   ;;
++*-*-phoenux*)
++  extra_options="$extra_options gnu-user.opt"
++  gas=yes
++  gnu_ld=yes
++  default_use_cxa_atexit=yes
++  use_gcc_stdint=wrap
++  tmake_file="${tmake_file} t-slibgcc"
++  thread_file='posix'
++  ;;
+ *-*-netbsd*)
+   tm_p_file="${tm_p_file} netbsd-protos.h"
+   tmake_file="t-netbsd t-slibgcc"
+@@ -1977,6 +1986,9 @@
+ 	tmake_file="${tmake_file} i386/t-x86_64-elf"
+ 	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
+ 	;;
++i[3-7]86-*-phoenux*)
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h i386/gnu-user-common.h phoenux.h"
++	;;
+ ia64*-*-elf*)
+ 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h ia64/sysv4.h ia64/elf.h"
+ 	tmake_file="ia64/t-ia64"
+diff -urN --no-dereference gcc-9.2.0/gmp-6.1.0/configfsf.sub gcc-9.2.0-patched/gmp-6.1.0/configfsf.sub
+--- gcc-9.2.0/gmp-6.1.0/configfsf.sub	2015-11-01 16:19:48.000000000 +0100
++++ gcc-9.2.0-patched/gmp-6.1.0/configfsf.sub	2019-09-26 03:49:10.159974231 +0200
+@@ -1399,7 +1399,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos* | -phoenux*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -urN --no-dereference gcc-9.2.0/isl-0.18/config.sub gcc-9.2.0-patched/isl-0.18/config.sub
+--- gcc-9.2.0/isl-0.18/config.sub	2016-01-24 21:50:53.000000000 +0100
++++ gcc-9.2.0-patched/isl-0.18/config.sub	2019-09-26 03:49:37.138972348 +0200
+@@ -1385,7 +1385,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos* | -phoenux*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -urN --no-dereference gcc-9.2.0/libgcc/config.host gcc-9.2.0-patched/libgcc/config.host
+--- gcc-9.2.0/libgcc/config.host	2019-01-17 13:29:13.000000000 +0100
++++ gcc-9.2.0-patched/libgcc/config.host	2019-09-26 03:51:27.449964649 +0200
+@@ -245,6 +245,11 @@
+   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-fuchsia"
+   extra_parts="crtbegin.o crtend.o"
+   ;;
++*-*-phoenux*)
++  extra_parts="$extra_parts crti.o crtbegin.o crtbeginS.o crtend.o crtendS.o crtn.o"
++  tmake_file="$tmake_file t-crtstuff-pic"
++  tmake_file="$tmake_file t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-libgcc-pic"
++  ;;
+ *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver t-linux"
+   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+@@ -643,6 +648,9 @@
+ x86_64-*-fuchsia*)
+ 	tmake_file="$tmake_file t-libgcc-pic"
+ 	;;
++i[3-7]86-*-phoenux*)
++	tmake_file="$tmake_file i386/t-crtstuff"
++	;;
+ i[34567]86-*-dragonfly*)
+ 	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
+ 	md_unwind_header=i386/dragonfly-unwind.h
+diff -urN --no-dereference gcc-9.2.0/libstdc++-v3/crossconfig.m4 gcc-9.2.0-patched/libstdc++-v3/crossconfig.m4
+--- gcc-9.2.0/libstdc++-v3/crossconfig.m4	2019-03-11 17:28:11.000000000 +0100
++++ gcc-9.2.0-patched/libstdc++-v3/crossconfig.m4	2019-09-26 03:52:38.063959720 +0200
+@@ -200,6 +200,13 @@
+     AC_CHECK_FUNCS(sockatmark)
+     AM_ICONV
+     ;;
++  *-phoenux*)
++    GLIBCXX_CHECK_COMPILER_FEATURES
++    GLIBCXX_CHECK_LINKER_FEATURES
++    GLIBCXX_CHECK_MATH_SUPPORT
++    GLIBCXX_CHECK_STDLIB_SUPPORT
++    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
++    ;;
+   *-mingw32*)
+     GLIBCXX_CHECK_LINKER_FEATURES
+     GLIBCXX_CHECK_MATH_SUPPORT
+diff -urN --no-dereference gcc-9.2.0/libtool.m4 gcc-9.2.0-patched/libtool.m4
+--- gcc-9.2.0/libtool.m4	2018-10-31 18:03:16.000000000 +0100
++++ gcc-9.2.0-patched/libtool.m4	2019-09-26 03:54:39.243588104 +0200
+@@ -2494,6 +2494,16 @@
+   dynamic_linker='GNU/Linux ld.so'
+   ;;
+ 
++phoenux*)
++  version_type=linux
++  need_lib_prefix=no
++  need_version=no
++  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
++  soname_spec='${libname}${release}${shared_ext}$major'
++  shlibpath_var=LD_LIBRARY_PATH
++  hardcode_into_libs=yes
++  ;;
++
+ netbsd*)
+   version_type=sunos
+   need_lib_prefix=no
+@@ -3088,6 +3098,10 @@
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
++phoenux*)
++  lt_cv_deplibs_check_method=pass_all
++  ;;
++
+ # This must be Linux ELF.
+ linux* | k*bsd*-gnu | kopensolaris*-gnu)
+   lt_cv_deplibs_check_method=pass_all
+diff -urN --no-dereference gcc-9.2.0/mpc-1.0.3/config.sub gcc-9.2.0-patched/mpc-1.0.3/config.sub
+--- gcc-9.2.0/mpc-1.0.3/config.sub	2015-02-16 13:28:25.000000000 +0100
++++ gcc-9.2.0-patched/mpc-1.0.3/config.sub	2019-09-26 03:56:12.236581614 +0200
+@@ -1393,7 +1393,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos* | -phoenux*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -urN --no-dereference gcc-9.2.0/mpfr-3.1.4/config.sub gcc-9.2.0-patched/mpfr-3.1.4/config.sub
+--- gcc-9.2.0/mpfr-3.1.4/config.sub	2016-03-06 12:33:18.000000000 +0100
++++ gcc-9.2.0-patched/mpfr-3.1.4/config.sub	2019-09-26 03:56:34.302580074 +0200
+@@ -1399,7 +1399,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos* | -phoenux*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
