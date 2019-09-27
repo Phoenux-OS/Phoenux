@@ -30,6 +30,18 @@ fi
 mkdir -p build-toolchain
 cd build-toolchain
 
+git clone https://github.com/managarm/mlibc.git || true
+pushd mlibc
+git pull
+rm -rf build
+mkdir -p build
+cd build
+sed "s|@@sysroot@@|$TARGET_ROOT|g" < ../../../cross_file.txt > ./cross_file.txt
+meson .. --prefix=/ --libdir=lib --includedir=usr/include --buildtype=debugoptimized --cross-file cross_file.txt -Dheaders_only=true
+ninja
+DESTDIR="$TARGET_ROOT" ninja install
+popd
+
 if [ ! -f binutils-$BINUTILSVERSION.tar.gz ]; then
 	wget https://ftp.gnu.org/gnu/binutils/binutils-$BINUTILSVERSION.tar.gz
 fi
@@ -58,18 +70,17 @@ cd libstdc++-v3 && autoconf && cd ..
 cd ..
 mkdir build-gcc
 cd build-gcc
-../gcc-$GCCVERSION/configure --target=$TARGET --prefix="$CROSS_ROOT" --with-sysroot="$TARGET_ROOT" --enable-languages=c,c++ --disable-shared --disable-hosted-libstdcxx
-make inhibit_libc=true all-gcc
+../gcc-$GCCVERSION/configure --target=$TARGET --prefix="$CROSS_ROOT" --with-sysroot="$TARGET_ROOT" --enable-languages=c,c++ --disable-shared --disable-gcov --disable-multilib --enable-initfini-array
+make all-gcc
 make install-gcc
-make inhibit_libc=true all-target-libgcc
+cd ../..
+
+./make_mlibc.sh
+
+cd build-toolchain
+cd build-gcc
+make all-target-libgcc
 make install-target-libgcc
-
-#cd ../..
-
-#./make_mlibc.sh
-
-#cd build-toolchain
-#cd build-gcc
 #make all-target-libstdc++-v3
 #make install-target-libstdc++-v3
 

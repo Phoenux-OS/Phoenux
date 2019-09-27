@@ -28,7 +28,7 @@ for i in $(ls -d */); do
 	cd ..
 done
 popd
-ninja -j1
+ninja
 DESTDIR="$TARGET_ROOT" ninja install
 
 exit 0

@@ -1,0 +1,6 @@
+/phoenux.img
+/**/*.o
+/**/*.bin
+/**/*.elf
+/bochsout.txt
+/root
