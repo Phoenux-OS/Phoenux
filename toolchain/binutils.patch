@@ -1,6 +1,6 @@
 diff -urN binutils-2.32/bfd/config.bfd binutils-2.32-patched/bfd/config.bfd
 --- binutils-2.32/bfd/config.bfd	2019-01-19 17:01:32.000000000 +0100
-+++ binutils-2.32-patched/bfd/config.bfd	2019-09-26 03:29:36.592056143 +0200
++++ binutils-2.32-patched/bfd/config.bfd	2019-09-28 00:05:18.571647994 +0200
 @@ -652,6 +652,10 @@
      targ_selvecs=
      targ64_selvecs=x86_64_elf64_vec
@@ -14,7 +14,7 @@ diff -urN binutils-2.32/bfd/config.bfd binutils-2.32-patched/bfd/config.bfd
      targ_defvec=x86_64_elf64_cloudabi_vec
 diff -urN binutils-2.32/config.sub binutils-2.32-patched/config.sub
 --- binutils-2.32/config.sub	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-patched/config.sub	2019-09-26 03:30:24.457052802 +0200
++++ binutils-2.32-patched/config.sub	2019-09-28 00:05:18.571647994 +0200
 @@ -1363,7 +1363,7 @@
  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
@@ -26,7 +26,7 @@ diff -urN binutils-2.32/config.sub binutils-2.32-patched/config.sub
  	qnx*)
 diff -urN binutils-2.32/gas/configure.tgt binutils-2.32-patched/gas/configure.tgt
 --- binutils-2.32/gas/configure.tgt	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-patched/gas/configure.tgt	2019-09-26 03:31:16.122049196 +0200
++++ binutils-2.32-patched/gas/configure.tgt	2019-09-28 00:05:18.571647994 +0200
 @@ -261,6 +261,8 @@
    i386-*-rdos*)				fmt=elf ;;
    i386-*-darwin*)			fmt=macho ;;
@@ -36,14 +36,78 @@ diff -urN binutils-2.32/gas/configure.tgt binutils-2.32-patched/gas/configure.tg
    ia16-*-elf*)				fmt=elf ;;
  
    ia64-*-elf*)				fmt=elf ;;
+diff -urN binutils-2.32/ld/Makefile.am binutils-2.32-patched/ld/Makefile.am
+--- binutils-2.32/ld/Makefile.am	2019-01-19 17:01:33.000000000 +0100
++++ binutils-2.32-patched/ld/Makefile.am	2019-09-28 00:12:33.176672377 +0200
+@@ -381,7 +381,8 @@
+ 	exgateelf.c \
+ 	ez80.c \
+ 	ez8001.c \
+-	ez8002.c
++	ez8002.c \
++	eelf_i386_phoenux.c
+ 
+ ALL_EMULATIONS = $(ALL_EMULATION_SOURCES:.c=.@OBJEXT@)
+ 
+@@ -1876,6 +1877,9 @@
+   $(srcdir)/emultempl/mmo.em $(srcdir)/scripttempl/DWARF.sc \
+   $(srcdir)/scripttempl/mmo.sc ${GEN_DEPENDS}
+ 
++eelf_i386_phoenux.c: $(srcdir)/emulparams/elf_i386_phoenux.sh \
++  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} elf_i386_phoenux "$(tdir_elf_i386_phoenux)"
+ 
+ # We need this for automake to use YLWRAP.
+ EXTRA_ld_new_SOURCES = deffilep.y ldlex.l
 diff -urN binutils-2.32/ld/configure.tgt binutils-2.32-patched/ld/configure.tgt
 --- binutils-2.32/ld/configure.tgt	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-patched/ld/configure.tgt	2019-09-26 03:32:43.668043085 +0200
-@@ -264,6 +264,7 @@
++++ binutils-2.32-patched/ld/configure.tgt	2019-09-28 00:14:55.946659659 +0200
+@@ -264,6 +264,10 @@
  			targ_extra_emuls=elf_x86_64 ;;
  x86_64-*-redox*)	targ_emul=elf_x86_64
  			targ_extra_emuls=elf_i386 ;;
-+i[3-7]86-*-phoenux*)	targ_emul=elf_i386 ;;
++i[3-7]86-*-phoenux*)
++			targ_emul=elf_i386_phoenux
++			targ_extra_emuls=elf_i386
++			;;
  i[3-7]86-*-sysv[45]*)	targ_emul=elf_i386
  			targ_extra_emuls=elf_iamcu ;;
  i[3-7]86-*-solaris2*)	targ_emul=elf_i386_sol2
+diff -urN binutils-2.32/ld/emulparams/elf_i386_phoenux.sh binutils-2.32-patched/ld/emulparams/elf_i386_phoenux.sh
+--- binutils-2.32/ld/emulparams/elf_i386_phoenux.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.32-patched/ld/emulparams/elf_i386_phoenux.sh	2019-09-28 00:18:14.071642011 +0200
+@@ -0,0 +1,3 @@
++. ${srcdir}/emulparams/elf_i386.sh
++SCRIPT_NAME=i386phoenux
++TEXT_START_ADDR=0x10000
+diff -urN binutils-2.32/ld/scripttempl/i386phoenux.sc binutils-2.32-patched/ld/scripttempl/i386phoenux.sc
+--- binutils-2.32/ld/scripttempl/i386phoenux.sc	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.32-patched/ld/scripttempl/i386phoenux.sc	2019-09-28 02:00:35.378481353 +0200
+@@ -0,0 +1,27 @@
++cat <<EOF
++
++OUTPUT_FORMAT(binary)
++ENTRY(_start)
++
++SECTIONS {
++    . = 0x10000;
++
++    .text ALIGN(4K) : {
++        KEEP(*(.phoenux_entry))
++        *(.text*)
++    }
++
++    .got ALIGN(4K) : {
++        _GLOBAL_OFFSET_TABLE_ = .;
++        KEEP(*(.got*))
++    }
++
++    .data ALIGN(4K) : {
++        *(.data*)
++        *(.rodata*)
++        *(.bss*)
++        *(COMMON)
++    }
++}
++
++EOF

@@ -48,14 +48,25 @@ fi
 if [ ! -f gcc-$GCCVERSION.tar.gz ]; then
 	wget https://ftp.gnu.org/gnu/gcc/gcc-$GCCVERSION/gcc-$GCCVERSION.tar.gz
 fi
+if [ ! -f automake-1.15.1.tar.gz ]; then
+    wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz
+fi
 
-rm -rf gcc-$GCCVERSION binutils-$BINUTILSVERSION build-gcc build-binutils
+rm -rf gcc-$GCCVERSION binutils-$BINUTILSVERSION automake-1.15.1 build-gcc build-binutils build-automake
 
 tar -xf gcc-$GCCVERSION.tar.gz
 tar -xf binutils-$BINUTILSVERSION.tar.gz
+tar -xf automake-1.15.1.tar.gz
 
-cd binutils-$BINUTILSVERSION
+mkdir build-automake
+cd build-automake
+../automake-1.15.1/configure --prefix="$CROSS_ROOT"
+make
+make install
+
+cd ../binutils-$BINUTILSVERSION
 patch -p1 < ../../binutils.patch
+cd ld && automake && cd ..
 cd ..
 mkdir build-binutils
 cd build-binutils

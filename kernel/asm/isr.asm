@@ -19,6 +19,7 @@ extern set_PIC0_mask
 extern get_PIC0_mask
 
 ; API calls
+extern debug_log
 extern open
 extern close
 extern read
@@ -72,7 +73,7 @@ routine_list:
         dd      general_execute         ; 0x01
         dd      0 ;general_execute_block; 0x02 - dummy entry
         dd      0                       ; 0x03
-        dd      0                       ; 0x04
+        dd      debug_log               ; 0x04
         dd      0 ;task_fork            ; 0x05 - dummy entry
         dd      0                       ; 0x06
         dd      0                       ; 0x07
@@ -174,7 +175,7 @@ irq0_handler:
         push edx
         push ecx
         push ebx
-        push eax        
+        push eax
         mov al, 0x20    ; acknowledge interrupt to PIC0
         out 0x20, al
         mov ax, 0x10

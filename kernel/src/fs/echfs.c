@@ -4,9 +4,9 @@
 #define SEARCH_FAILURE          0xffffffffffffffff
 #define ROOT_ID                 0xffffffffffffffff
 #define ENTRIES_PER_BLOCK       2
-#define FILENAME_LEN            218
+#define FILENAME_LEN            201
 #define RESERVED_BLOCKS         16
-#define BYTES_PER_BLOCK         32768
+#define BYTES_PER_BLOCK         512
 #define FILE_TYPE               0
 #define DIRECTORY_TYPE          1
 #define DELETED_ENTRY           0xfffffffffffffffe
@@ -50,16 +50,12 @@ typedef struct {
     uint64_t parent_id;
     uint8_t type;
     char name[FILENAME_LEN];
-    uint8_t perms;
+    uint64_t atime;
+    uint64_t mtime;
+    uint16_t perms;
     uint16_t owner;
     uint16_t group;
-    uint8_t hundreths;
-    uint8_t seconds;
-    uint8_t minutes;
-    uint8_t hours;
-    uint8_t day;
-    uint8_t month;
-    uint16_t year;
+    uint64_t ctime;
     uint64_t payload;
     uint64_t size;
 } __attribute__((packed)) entry_t;
@@ -293,19 +289,18 @@ entry_t rd_entry(uint64_t entry) {
     res.type = rd_byte(loc++);
     fstrcpy_in(res.name, loc);
     loc += FILENAME_LEN;
-    res.perms = rd_byte(loc++);
+    res.atime = rd_qword(loc);
+    loc += sizeof(uint64_t);
+    res.mtime = rd_qword(loc);
+    loc += sizeof(uint64_t);
+    res.perms = rd_word(loc);
+    loc += sizeof(uint16_t);
     res.owner = rd_word(loc);
     loc += sizeof(uint16_t);
     res.group = rd_word(loc);
     loc += sizeof(uint16_t);
-    res.hundreths = rd_byte(loc++);
-    res.seconds = rd_byte(loc++);
-    res.minutes = rd_byte(loc++);
-    res.hours = rd_byte(loc++);
-    res.day = rd_byte(loc++);
-    res.month = rd_byte(loc++);
-    res.year = rd_word(loc);
-    loc += sizeof(uint16_t);
+    res.ctime = rd_qword(loc);
+    loc += sizeof(uint64_t);
     res.payload = rd_qword(loc);
     loc += sizeof(uint64_t);
     res.size = rd_qword(loc);
@@ -321,19 +316,18 @@ void wr_entry(uint64_t entry, entry_t entry_src) {
     wr_byte(loc++, entry_src.type);
     fstrcpy_out(loc, entry_src.name);
     loc += FILENAME_LEN;
-    wr_byte(loc++, entry_src.perms);
+    wr_qword(loc, entry_src.atime);
+    loc += sizeof(uint64_t);
+    wr_qword(loc, entry_src.mtime);
+    loc += sizeof(uint64_t);
+    wr_word(loc, entry_src.perms);
+    loc += sizeof(uint16_t);
     wr_word(loc, entry_src.owner);
     loc += sizeof(uint16_t);
     wr_word(loc, entry_src.group);
     loc += sizeof(uint16_t);
-    wr_byte(loc++, entry_src.hundreths);
-    wr_byte(loc++, entry_src.seconds);
-    wr_byte(loc++, entry_src.minutes);
-    wr_byte(loc++, entry_src.hours);
-    wr_byte(loc++, entry_src.day);
-    wr_byte(loc++, entry_src.month);
-    wr_word(loc, entry_src.year);
-    loc += sizeof(uint16_t);
+    wr_qword(loc, entry_src.ctime);
+    loc += sizeof(uint64_t);
     wr_qword(loc, entry_src.payload);
     loc += sizeof(uint64_t);
     wr_qword(loc, entry_src.size);
