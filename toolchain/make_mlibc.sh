@@ -13,7 +13,7 @@ export PATH="$CROSS_ROOT/bin:$PATH"
 mkdir -p build-toolchain
 cd build-toolchain
 
-git clone https://github.com/managarm/mlibc.git || true
+git clone https://github.com/Phoenux-OS/mlibc.git || true
 cd mlibc
 git pull
 rm -rf build
