@@ -31,9 +31,9 @@ call simple_print
 mov si, Stage2Msg				; Print loading stage 2 message
 call simple_print
 
-mov ax, 1						; Start from LBA sector 1
+mov eax, 1						; Start from LBA sector 1
 mov ebx, 0x7E00					; Load to offset 0x7E00
-mov cx, 7						; Load 7 sectors
+mov ecx, 7						; Load 7 sectors
 call read_sectors
 
 jc err							; Catch any error
@@ -65,8 +65,43 @@ DoneMsg			db '  DONE', 0x0D, 0x0A, 0x00
 
 drive_number				db 0x00				; Drive number
 
-times 510-($-$$)			db 0x00				; Fill rest with 0x00
-bios_signature				dw 0xAA55			; BIOS signature
+; Add a fake MBR because some motherboards won't boot otherwise
+
+times 0x1b8-($-$$) db 0
+mbr:
+    .signature: dd 0xdeadbeef
+    times 2 db 0
+    .p1:
+        db 0x80         ; status (active)
+        db 0x20, 0x21, 0x00    ; CHS start
+        db 0x83         ; partition type (Linux)
+        db 0xb6, 0x25, 0x51    ; CHS end
+        dd 1024*1024   ; LBA start
+        dd 1024*1024    ; size in sectors
+    .p2:
+        db 0x00         ; status (invalid)
+        times 3 db 0    ; CHS start
+        db 0x00         ; partition type
+        times 3 db 0    ; CHS end
+        dd 00           ; LBA start
+        dd 00           ; size in sectors
+    .p3:
+        db 0x00         ; status (invalid)
+        times 3 db 0    ; CHS start
+        db 0x00         ; partition type
+        times 3 db 0    ; CHS end
+        dd 00           ; LBA start
+        dd 00           ; size in sectors
+    .p4:
+        db 0x00         ; status (invalid)
+        times 3 db 0    ; CHS start
+        db 0x00         ; partition type
+        times 3 db 0    ; CHS end
+        dd 00           ; LBA start
+        dd 00           ; size in sectors
+
+times 510-($-$$) db 0x00
+dw 0xaa55
 
 ; ************************* STAGE 2 ************************
 

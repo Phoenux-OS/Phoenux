@@ -7,8 +7,9 @@ read_sector:
 ; IN:
 ; EAX = LBA sector to load
 ; DL = Drive number
-; ES = Buffer segment
+; BP = Buffer segment
 ; BX = Buffer offset
+; CX = Count
 
 ; OUT:
 ; Carry if error
@@ -19,11 +20,12 @@ push ecx
 push edx
 push esi
 push edi
+push ebp
 
-push es
-pop word [.target_segment]
+mov word [.target_segment], bp
 mov word [.target_offset], bx
 mov dword [.lba_address_low], eax
+mov word [.count], cx
 
 xor esi, esi
 mov si, .da_struct
@@ -35,6 +37,7 @@ int 0x13								; Call int 0x13
 
 .done:
 
+pop ebp
 pop edi
 pop esi
 pop edx
@@ -47,12 +50,11 @@ align 4
 .da_struct:
     .packet_size        db  16
     .unused             db  0
-    .count              dw  1
+    .count              dw  0
     .target_offset      dw  0
     .target_segment     dw  0
     .lba_address_low    dd  0
     .lba_address_high   dd  0
-
 
 read_sectors:
 
@@ -65,7 +67,7 @@ read_sectors:
 ; DL = Drive number
 ; ES = Buffer segment
 ; EBX = Buffer offset
-; CX = Sectors count
+; ECX = Sectors count
 
 ; OUT:
 ; Carry if error
@@ -76,43 +78,45 @@ push ecx
 push edx
 push esi
 push edi
+push ebp
+push fs
+
+push 0x7000
+pop fs
 
 .loop:
 
-push es
 push ebx
+push ecx
 
-mov bx, 0x7000							; Load in a temp buffer
-mov es, bx
+mov bp, 0x7000							; Load in a temp buffer
 xor bx, bx
+mov cx, 1
 
 call read_sector						; Read sector
 
+pop ecx
 pop ebx
-pop es
 
 jc .done								; If carry exit with flag
 
-push ds
-
-mov si, 0x7000
-mov ds, si
-mov edi, ebx
+mov edi, 512 / 4
 xor esi, esi
+.copy_loop:
+mov ebp, dword [fs:esi]
+mov dword [es:ebx], ebp
+add esi, 4
+add ebx, 4
+dec edi
+jnz .copy_loop
 
-push ecx
-mov ecx, 512
-a32 o32 rep movsb
-pop ecx
-
-pop ds
-
-inc eax									; Increment sector
-add ebx, 512							; Add 512 to the buffer
-
-loop .loop								; Loop!
+inc eax				; Increment sector
+dec ecx
+jnz .loop								; Loop!
 
 .done:
+pop fs
+pop ebp
 pop edi
 pop esi
 pop edx
