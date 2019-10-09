@@ -1,5 +1,5 @@
-#ifndef __SYMBOL_H__
-#define __SYMBOL_H__
+#ifndef __LIB__SYMBOL_H__
+#define __LIB__SYMBOL_H__
 
 typedef void *symbol[];
 

@@ -1,5 +1,5 @@
-#ifndef __CIO_H__
-#define __CIO_H__
+#ifndef __LIB__CIO_H__
+#define __LIB__CIO_H__
 
 #include <stdint.h>
 

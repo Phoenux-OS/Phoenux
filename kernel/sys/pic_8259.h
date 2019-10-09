@@ -1,5 +1,5 @@
-#ifndef __PIC_8259_H__
-#define __PIC_8259_H__
+#ifndef __SYS__PIC_8259_H__
+#define __SYS__PIC_8259_H__
 
 #include <stdint.h>
 
