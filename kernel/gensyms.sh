@@ -10,14 +10,17 @@ i686-phoenux-objdump -t phoenux.elf | sort > "$TMP1"
 grep "\.text" < "$TMP1" | cut -d' ' -f1 > "$TMP2"
 grep "\.text" < "$TMP1" | awk 'NF{ print $NF }' > "$TMP3"
 
-cat <<EOF >symlist.c
+cat <<EOF >symlist.gen
 #include <symlist.h>
 
 struct symlist_t symlist[] = {
 EOF
 
-paste -d'$' "$TMP2" "$TMP3" | sed 's/^/    {0x/g' | sed 's/\$/, "/g' | sed 's/$/"},/g' >> symlist.c
+paste -d'$' "$TMP2" "$TMP3" | sed 's/^/    {0x/g' | sed 's/\$/, "/g' | sed 's/$/"},/g' >> symlist.gen
 
-echo "};" >> symlist.c
+cat <<EOF >> symlist.gen
+    {0xffffffff, ""}
+};
+EOF
 
 rm "$TMP1" "$TMP2" "$TMP3"

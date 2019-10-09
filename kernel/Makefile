@@ -15,11 +15,16 @@ LDHARDFLAGS := -no-pie -nostdlib -lgcc -static-libgcc -T ./linker.ld
 
 phoenux.bin: phoenux.elf
 	./gensyms.sh
-	$(CC) $(CHARDFLAGS) $(CFLAGS) -c symlist.c -o symlist.o
-	$(CC) $(OBJ) $(LDHARDFLAGS) -Wl,--oformat=binary $(LDFLAGS) -o $@
+	$(CC) -x c $(CHARDFLAGS) $(CFLAGS) -c symlist.gen -o symlist.o
+	$(CC) $(OBJ) symlist.o $(LDHARDFLAGS) -Wl,--oformat=binary $(LDFLAGS) -o $@
 
-phoenux.elf: $(BINS) $(OBJ)
-	$(CC) $(OBJ) $(LDHARDFLAGS) $(LDFLAGS) -o $@
+phoenux.elf: $(BINS) $(OBJ) symlist.o
+	$(CC) $(OBJ) symlist.o $(LDHARDFLAGS) $(LDFLAGS) -o $@
+
+symlist.o:
+	echo '#include <symlist.h>' > symlist.gen
+	echo 'struct symlist_t symlist[] = {{0xffffffff,""}};' >> symlist.gen
+	$(CC) -x c $(CHARDFLAGS) $(CFLAGS) -c symlist.gen -o symlist.o
 
 %.o: %.c
 	$(CC) $(CHARDFLAGS) $(CFLAGS) -c $< -o $@
