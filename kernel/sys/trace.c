@@ -3,10 +3,12 @@
 #include <lib/kprint.h>
 #include <sys/trace.h>
 
-struct symlist_t *trace_address(size_t addr) {
+char *trace_address(size_t *off, size_t addr) {
     for (size_t i = 0; ; i++) {
-        if (symlist[i].addr >= addr)
-            return &symlist[i-1];
+        if (symlist[i].addr >= addr) {
+            *off = addr - symlist[i-1].addr;
+            return symlist[i-1].name;
+        }
     }
 }
 
@@ -20,8 +22,9 @@ void print_stacktrace(void) {
     for (;;) {
         size_t old_bp = base_ptr[0];
         size_t ret_addr = base_ptr[1];
-        struct symlist_t *t = trace_address(ret_addr);
-        kprint(KPRN_INFO, "  [%x] <%s>", t->addr, t->name);
+        size_t off;
+        char *name = trace_address(&off, ret_addr);
+        kprint(KPRN_INFO, "  [%x] <%s+%x>", ret_addr, name, off);
         if (!old_bp)
             break;
         base_ptr = (void*)old_bp;
