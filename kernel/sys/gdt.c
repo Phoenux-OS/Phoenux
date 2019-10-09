@@ -1,7 +1,10 @@
 #include <stdint.h>
+#include <stddef.h>
+#include <lib/symbol.h>
+#include <sys/gdt.h>
 
-extern uint32_t TSS;
-extern uint32_t TSS_size;
+extern symbol tss;
+extern symbol tss_size;
 
 typedef struct {
     uint16_t limit_low;
@@ -10,98 +13,95 @@ typedef struct {
     uint8_t access;
     uint8_t granularity;
     uint8_t base_high;
-} __attribute__((packed)) GDT_entry_t;
+} __attribute__((packed)) gdt_entry_t;
 
-static GDT_entry_t GDT[8];
+static gdt_entry_t gdt[8];
 
 typedef struct {
     uint16_t size;
     uint32_t base;
-} __attribute__((packed)) GDT_ptr_t;
+} __attribute__((packed)) gdt_ptr_t;
 
-static GDT_ptr_t GDT_ptr = {
-    (uint16_t)(sizeof(GDT) - 1),
-    (uint32_t)GDT
+static gdt_ptr_t gdt_ptr = {
+    (uint16_t)(sizeof(gdt) - 1),
+    (uint32_t)gdt
 };
 
-void set_segment(uint16_t entry, uint32_t base, uint32_t page_count) {
-    GDT[entry].base_low = (uint16_t)(base & 0x0000ffff);
-    GDT[entry].base_mid = (uint8_t)((base & 0x00ff0000) / 0x10000);
-    GDT[entry].base_high = (uint8_t)((base & 0xff000000) / 0x1000000);
+void set_segment(int entry, size_t base, size_t page_count) {
+    gdt[entry].base_low = (uint16_t)(base & 0x0000ffff);
+    gdt[entry].base_mid = (uint8_t)((base & 0x00ff0000) / 0x10000);
+    gdt[entry].base_high = (uint8_t)((base & 0xff000000) / 0x1000000);
 
-    GDT[entry].limit_low = (uint16_t)((page_count - 1) & 0x0000ffff);
-    GDT[entry].granularity = (uint8_t)((GDT[entry].granularity & 0b11110000) | ((page_count & 0x000f0000) / 0x10000));
-
-    return;
+    gdt[entry].limit_low = (uint16_t)((page_count - 1) & 0x0000ffff);
+    gdt[entry].granularity = (uint8_t)((gdt[entry].granularity & 0b11110000) | ((page_count & 0x000f0000) / 0x10000));
 }
 
-void load_GDT(void) {
-
+void load_gdt(void) {
     // null pointer
-    GDT[0].limit_low = 0;
-    GDT[0].base_low = 0;
-    GDT[0].base_mid = 0;
-    GDT[0].access = 0;
-    GDT[0].granularity = 0;
-    GDT[0].base_high = 0;
+    gdt[0].limit_low = 0;
+    gdt[0].base_low = 0;
+    gdt[0].base_mid = 0;
+    gdt[0].access = 0;
+    gdt[0].granularity = 0;
+    gdt[0].base_high = 0;
 
     // define kernel code
-    GDT[1].limit_low = 0xffff;
-    GDT[1].base_low = 0x0000;
-    GDT[1].base_mid = 0x00;
-    GDT[1].access = 0b10011010;
-    GDT[1].granularity = 0b11001111;
-    GDT[1].base_high = 0x00;
+    gdt[1].limit_low = 0xffff;
+    gdt[1].base_low = 0x0000;
+    gdt[1].base_mid = 0x00;
+    gdt[1].access = 0b10011010;
+    gdt[1].granularity = 0b11001111;
+    gdt[1].base_high = 0x00;
 
     // define kernel data
-    GDT[2].limit_low = 0xffff;
-    GDT[2].base_low = 0x0000;
-    GDT[2].base_mid = 0x00;
-    GDT[2].access = 0b10010010;
-    GDT[2].granularity = 0b11001111;
-    GDT[2].base_high = 0x00;
+    gdt[2].limit_low = 0xffff;
+    gdt[2].base_low = 0x0000;
+    gdt[2].base_mid = 0x00;
+    gdt[2].access = 0b10010010;
+    gdt[2].granularity = 0b11001111;
+    gdt[2].base_high = 0x00;
 
     // define user code
-    GDT[3].limit_low = 0x0000;
-    GDT[3].base_low = 0x0000;
-    GDT[3].base_mid = 0x00;
-    GDT[3].access = 0b11111010;
-    GDT[3].granularity = 0b11000000;
-    GDT[3].base_high = 0x00;
+    gdt[3].limit_low = 0x0000;
+    gdt[3].base_low = 0x0000;
+    gdt[3].base_mid = 0x00;
+    gdt[3].access = 0b11111010;
+    gdt[3].granularity = 0b11000000;
+    gdt[3].base_high = 0x00;
 
     // define user data
-    GDT[4].limit_low = 0x0000;
-    GDT[4].base_low = 0x0000;
-    GDT[4].base_mid = 0x00;
-    GDT[4].access = 0b11110010;
-    GDT[4].granularity = 0b11000000;
-    GDT[4].base_high = 0x00;
+    gdt[4].limit_low = 0x0000;
+    gdt[4].base_low = 0x0000;
+    gdt[4].base_mid = 0x00;
+    gdt[4].access = 0b11110010;
+    gdt[4].granularity = 0b11000000;
+    gdt[4].base_high = 0x00;
 
     // define 16-bit code
-    GDT[5].limit_low = 0xffff;
-    GDT[5].base_low = 0x0000;
-    GDT[5].base_mid = 0x00;
-    GDT[5].access = 0b10011010;
-    GDT[5].granularity = 0b10001111;
-    GDT[5].base_high = 0x00;
+    gdt[5].limit_low = 0xffff;
+    gdt[5].base_low = 0x0000;
+    gdt[5].base_mid = 0x00;
+    gdt[5].access = 0b10011010;
+    gdt[5].granularity = 0b10001111;
+    gdt[5].base_high = 0x00;
 
     // define 16-bit data
-    GDT[6].limit_low = 0xffff;
-    GDT[6].base_low = 0x0000;
-    GDT[6].base_mid = 0x00;
-    GDT[6].access = 0b10010010;
-    GDT[6].granularity = 0b10001111;
-    GDT[6].base_high = 0x00;
+    gdt[6].limit_low = 0xffff;
+    gdt[6].base_low = 0x0000;
+    gdt[6].base_mid = 0x00;
+    gdt[6].access = 0b10010010;
+    gdt[6].granularity = 0b10001111;
+    gdt[6].base_high = 0x00;
 
     // define TSS segment
-    GDT[7].limit_low = (uint16_t)(TSS_size & 0x0000ffff);
-    GDT[7].base_low = (uint16_t)(TSS & 0x0000ffff);
-    GDT[7].base_mid = (uint8_t)((TSS & 0x00ff0000) / 0x10000);
-    GDT[7].access = 0b11101001;
-    GDT[7].granularity = 0b00000000;
-    GDT[7].base_high = (uint8_t)((TSS & 0xff000000) / 0x1000000);
+    gdt[7].limit_low = (uint16_t)((size_t)tss_size & 0x0000ffff);
+    gdt[7].base_low = (uint16_t)((size_t)tss & 0x0000ffff);
+    gdt[7].base_mid = (uint8_t)(((size_t)tss & 0x00ff0000) / 0x10000);
+    gdt[7].access = 0b11101001;
+    gdt[7].granularity = 0b00000000;
+    gdt[7].base_high = (uint8_t)(((size_t)tss & 0xff000000) / 0x1000000);
 
-    // effectively load the GDT
+    // effectively load the gdt
     asm volatile (
         "mov eax, %0;"
         "lgdt [eax];"
@@ -114,22 +114,17 @@ void load_GDT(void) {
         "mov gs, ax;"
         "mov ss, ax;"
          :
-         : "r" (&GDT_ptr)
+         : "r" (&gdt_ptr)
          : "eax"
     );
-
-    return;
 }
 
-void load_TSS(void) {
-
+void load_tss(void) {
     asm volatile (
-        "mov ax, 0x3B;"
+        "mov ax, 0x3b;"
         "ltr ax;"
          :
          :
          : "eax"
     );
-
-    return;
 }

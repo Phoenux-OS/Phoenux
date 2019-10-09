@@ -5,8 +5,8 @@ void kernel_init(void) {
     pic_8259_mask_all();
     pic_8259_remap(0x20, 0x28);
 
-    load_GDT();
-    load_TSS();
+    load_gdt();
+    load_tss();
 
     for (;;) {}
 }
