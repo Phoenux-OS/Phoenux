@@ -3,6 +3,7 @@
 #include <sys/e820.h>
 #include <drv/vga_textmode.h>
 #include <lib/kprint.h>
+#include <sys/panic.h>
 
 void kernel_init(void) {
     pic_8259_mask_all();
@@ -17,5 +18,5 @@ void kernel_init(void) {
 
     init_e820();
 
-    for (;;) {}
+    panic("Nothing to do");
 }

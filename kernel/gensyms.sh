@@ -6,7 +6,7 @@ TMP1=$(mktemp)
 TMP2=$(mktemp)
 TMP3=$(mktemp)
 
-i686-phoenux-objdump -t phoenux.elf | sort > "$TMP1"
+i686-phoenux-objdump -t phoenux.elf | sed '/\bd\b/d' | sort > "$TMP1"
 grep "\.text" < "$TMP1" | cut -d' ' -f1 > "$TMP2"
 grep "\.text" < "$TMP1" | awk 'NF{ print $NF }' > "$TMP3"
 

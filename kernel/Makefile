@@ -10,7 +10,7 @@ REAL_FILES  := $(shell find . -type f -name '*.real')
 OBJ         := $(C_FILES:.c=.o) $(ASM_FILES:.asm=.o)
 BINS        := $(REAL_FILES:.real=.bin)
 
-CHARDFLAGS  := -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -I.
+CHARDFLAGS  := -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -fno-omit-frame-pointer -I.
 LDHARDFLAGS := -no-pie -nostdlib -lgcc -static-libgcc -T ./linker.ld
 
 phoenux.bin: phoenux.elf
