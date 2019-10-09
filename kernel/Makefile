@@ -1,6 +1,5 @@
 CC      = i686-phoenux-gcc
 AS      = nasm
-OBJCOPY = i686-phoenux-objcopy
 PREFIX  = /
 CFLAGS  = -O2 -Wall -Wextra
 LDFLAGS =
@@ -14,9 +13,13 @@ BINS        := $(REAL_FILES:.real=.bin)
 CHARDFLAGS  := -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -I.
 LDHARDFLAGS := -no-pie -nostdlib -lgcc -static-libgcc -T ./linker.ld
 
-phoenux.bin: $(BINS) $(OBJ)
-	$(CC) $(OBJ) $(LDHARDFLAGS) $(LDFLAGS) -o phoenux.elf
-	$(OBJCOPY) -O binary phoenux.elf phoenux.bin
+phoenux.bin: phoenux.elf
+	./gensyms.sh
+	$(CC) $(CHARDFLAGS) $(CFLAGS) -c symlist.c -o symlist.o
+	$(CC) $(OBJ) $(LDHARDFLAGS) -Wl,--oformat=binary $(LDFLAGS) -o $@
+
+phoenux.elf: $(BINS) $(OBJ)
+	$(CC) $(OBJ) $(LDHARDFLAGS) $(LDFLAGS) -o $@
 
 %.o: %.c
 	$(CC) $(CHARDFLAGS) $(CFLAGS) -c $< -o $@
