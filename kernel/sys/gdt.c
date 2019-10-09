@@ -1,8 +1,16 @@
-#include <kernel.h>
 #include <stdint.h>
 
 extern uint32_t TSS;
 extern uint32_t TSS_size;
+
+typedef struct {
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_mid;
+    uint8_t access;
+    uint8_t granularity;
+    uint8_t base_high;
+} __attribute__((packed)) GDT_entry_t;
 
 static GDT_entry_t GDT[8];
 
@@ -20,7 +28,7 @@ void set_segment(uint16_t entry, uint32_t base, uint32_t page_count) {
     GDT[entry].base_low = (uint16_t)(base & 0x0000ffff);
     GDT[entry].base_mid = (uint8_t)((base & 0x00ff0000) / 0x10000);
     GDT[entry].base_high = (uint8_t)((base & 0xff000000) / 0x1000000);
-    
+
     GDT[entry].limit_low = (uint16_t)((page_count - 1) & 0x0000ffff);
     GDT[entry].granularity = (uint8_t)((GDT[entry].granularity & 0b11110000) | ((page_count & 0x000f0000) / 0x10000));
 
@@ -36,7 +44,7 @@ void load_GDT(void) {
     GDT[0].access = 0;
     GDT[0].granularity = 0;
     GDT[0].base_high = 0;
-    
+
     // define kernel code
     GDT[1].limit_low = 0xffff;
     GDT[1].base_low = 0x0000;
@@ -52,7 +60,7 @@ void load_GDT(void) {
     GDT[2].access = 0b10010010;
     GDT[2].granularity = 0b11001111;
     GDT[2].base_high = 0x00;
-    
+
     // define user code
     GDT[3].limit_low = 0x0000;
     GDT[3].base_low = 0x0000;
@@ -68,7 +76,7 @@ void load_GDT(void) {
     GDT[4].access = 0b11110010;
     GDT[4].granularity = 0b11000000;
     GDT[4].base_high = 0x00;
-    
+
     // define 16-bit code
     GDT[5].limit_low = 0xffff;
     GDT[5].base_low = 0x0000;
@@ -92,7 +100,7 @@ void load_GDT(void) {
     GDT[7].access = 0b11101001;
     GDT[7].granularity = 0b00000000;
     GDT[7].base_high = (uint8_t)((TSS & 0xff000000) / 0x1000000);
-    
+
     // effectively load the GDT
     asm volatile (
         "mov eax, %0;"

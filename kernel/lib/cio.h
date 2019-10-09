@@ -51,4 +51,9 @@
 	value;										\
 })
 
+#define io_wait() ({ port_out_b(0x80, 0x00); })
+
+#define disable_interrupts() ({ asm volatile ("cli"); })
+#define enable_interrupts() ({ asm volatile ("sti"); })
+
 #endif

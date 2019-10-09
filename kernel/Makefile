@@ -8,7 +8,7 @@ REAL_FILES = $(shell find . -type f -name '*.real')
 OBJ = $(C_FILES:.c=.o) $(ASM_FILES:.asm=.o)
 BINS = $(REAL_FILES:.real=.bin)
 
-CHARDFLAGS = -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -I./include/
+CHARDFLAGS = -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -I.
 CFLAGS = -O2 -Wall -Wextra
 LDHARDFLAGS = -no-pie -nostdlib -lgcc -static-libgcc
 LDFLAGS = -O2
