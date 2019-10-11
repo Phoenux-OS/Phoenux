@@ -3,6 +3,7 @@
 #include <sys/e820.h>
 #include <drv/vga_textmode.h>
 #include <lib/kprint.h>
+#include <mm/pmm.h>
 #include <sys/panic.h>
 
 void kernel_init(void) {
@@ -17,6 +18,7 @@ void kernel_init(void) {
     kprint(KPRN_INFO, "Welcome to Phoenux");
 
     init_e820();
+    init_pmm();
 
     panic("Nothing to do");
 }
