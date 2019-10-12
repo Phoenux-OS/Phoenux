@@ -15,7 +15,7 @@ typedef struct {
     uint8_t base_high;
 } __attribute__((packed)) gdt_entry_t;
 
-static gdt_entry_t gdt[8];
+static gdt_entry_t gdt[10];
 
 typedef struct {
     uint16_t size;
@@ -45,7 +45,7 @@ void load_gdt(void) {
     gdt[0].granularity = 0;
     gdt[0].base_high = 0;
 
-    // define kernel code
+    // define interrupt code
     gdt[1].limit_low = 0xffff;
     gdt[1].base_low = 0x0000;
     gdt[1].base_mid = 0x00;
@@ -53,7 +53,7 @@ void load_gdt(void) {
     gdt[1].granularity = 0b11001111;
     gdt[1].base_high = 0x00;
 
-    // define kernel data
+    // define interrupt data
     gdt[2].limit_low = 0xffff;
     gdt[2].base_low = 0x0000;
     gdt[2].base_mid = 0x00;
@@ -61,45 +61,61 @@ void load_gdt(void) {
     gdt[2].granularity = 0b11001111;
     gdt[2].base_high = 0x00;
 
-    // define user code
-    gdt[3].limit_low = 0x0000;
+    // define kernel (ring 1) code
+    gdt[3].limit_low = 0xffff;
     gdt[3].base_low = 0x0000;
     gdt[3].base_mid = 0x00;
-    gdt[3].access = 0b11111010;
-    gdt[3].granularity = 0b11000000;
+    gdt[3].access = 0b10111010;
+    gdt[3].granularity = 0b11001111;
     gdt[3].base_high = 0x00;
 
-    // define user data
-    gdt[4].limit_low = 0x0000;
+    // define kernel (ring 1) data
+    gdt[4].limit_low = 0xffff;
     gdt[4].base_low = 0x0000;
     gdt[4].base_mid = 0x00;
-    gdt[4].access = 0b11110010;
-    gdt[4].granularity = 0b11000000;
+    gdt[4].access = 0b10110010;
+    gdt[4].granularity = 0b11001111;
     gdt[4].base_high = 0x00;
 
-    // define 16-bit code
-    gdt[5].limit_low = 0xffff;
+    // define user code
+    gdt[5].limit_low = 0x0000;
     gdt[5].base_low = 0x0000;
     gdt[5].base_mid = 0x00;
-    gdt[5].access = 0b10011010;
-    gdt[5].granularity = 0b10001111;
+    gdt[5].access = 0b11111010;
+    gdt[5].granularity = 0b11000000;
     gdt[5].base_high = 0x00;
 
-    // define 16-bit data
-    gdt[6].limit_low = 0xffff;
+    // define user data
+    gdt[6].limit_low = 0x0000;
     gdt[6].base_low = 0x0000;
     gdt[6].base_mid = 0x00;
-    gdt[6].access = 0b10010010;
-    gdt[6].granularity = 0b10001111;
+    gdt[6].access = 0b11110010;
+    gdt[6].granularity = 0b11000000;
     gdt[6].base_high = 0x00;
 
+    // define 16-bit code
+    gdt[7].limit_low = 0xffff;
+    gdt[7].base_low = 0x0000;
+    gdt[7].base_mid = 0x00;
+    gdt[7].access = 0b10011010;
+    gdt[7].granularity = 0b10001111;
+    gdt[7].base_high = 0x00;
+
+    // define 16-bit data
+    gdt[8].limit_low = 0xffff;
+    gdt[8].base_low = 0x0000;
+    gdt[8].base_mid = 0x00;
+    gdt[8].access = 0b10010010;
+    gdt[8].granularity = 0b10001111;
+    gdt[8].base_high = 0x00;
+
     // define TSS segment
-    gdt[7].limit_low = (uint16_t)((size_t)tss_size & 0x0000ffff);
-    gdt[7].base_low = (uint16_t)((size_t)tss & 0x0000ffff);
-    gdt[7].base_mid = (uint8_t)(((size_t)tss & 0x00ff0000) / 0x10000);
-    gdt[7].access = 0b11101001;
-    gdt[7].granularity = 0b00000000;
-    gdt[7].base_high = (uint8_t)(((size_t)tss & 0xff000000) / 0x1000000);
+    gdt[9].limit_low = (uint16_t)((size_t)tss_size & 0x0000ffff);
+    gdt[9].base_low = (uint16_t)((size_t)tss & 0x0000ffff);
+    gdt[9].base_mid = (uint8_t)(((size_t)tss & 0x00ff0000) / 0x10000);
+    gdt[9].access = 0b11101001;
+    gdt[9].granularity = 0b00000000;
+    gdt[9].base_high = (uint8_t)(((size_t)tss & 0xff000000) / 0x1000000);
 
     // effectively load the gdt
     asm volatile (
@@ -115,16 +131,33 @@ void load_gdt(void) {
         "mov ss, ax;"
          :
          : "r" (&gdt_ptr)
-         : "eax"
+         : "eax", "memory"
     );
 }
 
-void load_tss(void) {
+void go_to_ring1(void) {
     asm volatile (
-        "mov ax, 0x3b;"
+        "mov ax, 0x48;"
         "ltr ax;"
+        "mov eax, esp;"
+        "push 0x21;"
+        "push eax;"
+        "pushf;"
+        "pop eax;"
+        "or eax, 1 << 12;"
+        "push eax;"
+        "push 0x19;"
+        "push 1f;"
+        "iret;"
+        "1: .long 2f;"
+        "2:"
+        "mov ax, 0x21;"
+        "mov ds, ax;"
+        "mov es, ax;"
+        "mov fs, ax;"
+        "mov gs, ax;"
          :
          :
-         : "eax"
+         : "eax", "memory"
     );
 }

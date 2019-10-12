@@ -13,7 +13,7 @@ _start:
     sub ecx, bss_start
     xor al, al
     rep stosb
-    mov esp, 0xeffff0
+    mov esp, 0xeefff0
     xor ebp, ebp
     call kernel_init
   .die:

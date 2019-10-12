@@ -11,10 +11,10 @@ sidt [pmode_idt]
 lidt [real_idt]
 
 ; Load 16-bit segments
-jmp 0x28:pmode16
+jmp 0x38:pmode16
 bits 16
 pmode16:
-mov ax, 0x30
+mov ax, 0x40
 mov ds, ax
 mov es, ax
 mov ss, ax

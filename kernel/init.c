@@ -12,7 +12,6 @@ void kernel_init(void) {
     pic_8259_remap(0x20, 0x28);
 
     load_gdt();
-    load_tss();
     init_idt();
 
     init_vga_textmode();
@@ -20,6 +19,10 @@ void kernel_init(void) {
     kprint(KPRN_INFO, "Welcome to Phoenux");
 
     init_e820();
+
+    go_to_ring1();
+    // no real mode stuff after this
+
     init_pmm();
 
     asm volatile (

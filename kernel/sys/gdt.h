@@ -5,6 +5,6 @@
 
 void load_gdt(void);
 void set_segment(int entry, size_t base, size_t page_count);
-void load_tss(void);
+void go_to_ring1(void);
 
 #endif
