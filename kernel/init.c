@@ -1,5 +1,6 @@
 #include <sys/pic_8259.h>
 #include <sys/gdt.h>
+#include <sys/idt.h>
 #include <sys/e820.h>
 #include <drv/vga_textmode.h>
 #include <lib/kprint.h>
@@ -12,6 +13,7 @@ void kernel_init(void) {
 
     load_gdt();
     load_tss();
+    init_idt();
 
     init_vga_textmode();
 
@@ -20,5 +22,8 @@ void kernel_init(void) {
     init_e820();
     init_pmm();
 
-    panic("Nothing to do");
+    asm volatile (
+        "ud2"
+    );
+    panic(NULL, "Nothing to do");
 }
