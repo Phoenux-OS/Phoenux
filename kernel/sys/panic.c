@@ -15,18 +15,18 @@ void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...) {
 
     if (regs) {
         kprint(KPRN_PANIC, "CPU status at fault:");
-        kprint(KPRN_PANIC, "  EAX:    %x", regs->eax);
-        kprint(KPRN_PANIC, "  EBX:    %x", regs->ebx);
-        kprint(KPRN_PANIC, "  ECX:    %x", regs->ecx);
-        kprint(KPRN_PANIC, "  EDX:    %x", regs->edx);
-        kprint(KPRN_PANIC, "  ESI:    %x", regs->esi);
-        kprint(KPRN_PANIC, "  EDI:    %x", regs->edi);
-        kprint(KPRN_PANIC, "  EBP:    %x", regs->ebp);
-        kprint(KPRN_PANIC, "  ESP:    %x", regs->esp);
-        kprint(KPRN_PANIC, "  EFLAGS: %x", regs->eflags);
-        kprint(KPRN_PANIC, "  EIP:    %x", regs->eip);
-        kprint(KPRN_PANIC, "  CS:     %x", regs->cs);
-        kprint(KPRN_PANIC, "  SS:     %x", regs->ss);
+        kprint(KPRN_PANIC, "  EAX: %8x  EBX: %8x  ECX: %8x  EDX: %8x",
+                           regs->eax,
+                           regs->ebx,
+                           regs->ecx,
+                           regs->edx);
+        kprint(KPRN_PANIC, "  ESI: %8x  EDI: %8x  EBP: %8x  ESP: %8x",
+                           regs->esi,
+                           regs->edi,
+                           regs->ebp,
+                           regs->esp);
+        kprint(KPRN_PANIC, "  EIP: %8x  EFLAGS: %8x", regs->eip, regs->eflags);
+        kprint(KPRN_PANIC, "  CS:  %4x  SS: %4x", regs->cs, regs->ss);
     }
 
     if (print_trace)
