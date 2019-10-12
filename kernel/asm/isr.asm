@@ -22,35 +22,7 @@ global exc_security_handler
 
 extern exception_handler
 
-%macro except_handler_err_code 1
-    push dword [esp+5*4]
-    push dword [esp+5*4]
-    push dword [esp+5*4]
-    push dword [esp+5*4]
-    push dword [esp+5*4]
-    pusham
-    mov eax, esp
-    push dword [esp+20*4]
-    push eax
-    push %1
-    call exception_handler
-    popam
-    iret
-%endmacro
-
-%macro except_handler 1
-    pusham
-    mov eax, esp
-    push 0
-    push eax
-    push %1
-    call exception_handler
-    popam
-    iret
-%endmacro
-
-; Save registers.
-%macro pusham 0
+%macro interrupt_enter 0
     cld
     push eax
     push ebx
@@ -59,9 +31,25 @@ extern exception_handler
     push esi
     push edi
     push ebp
+    push ds
+    push es
+    push fs
+    push gs
+    push 0x10
+    push 0x10
+    push 0x10
+    push 0x10
+    pop ds
+    pop es
+    pop fs
+    pop gs
 %endmacro
 
-%macro popam 0
+%macro interrupt_leave 0
+    pop gs
+    pop fs
+    pop es
+    pop ds
     pop ebp
     pop edi
     pop esi
@@ -69,6 +57,33 @@ extern exception_handler
     pop ecx
     pop ebx
     pop eax
+%endmacro
+
+%macro except_handler_err_code 1
+    push dword [esp+5*4]
+    push dword [esp+5*4]
+    push dword [esp+5*4]
+    push dword [esp+5*4]
+    push dword [esp+5*4]
+    interrupt_enter
+    mov eax, esp
+    push dword [esp+20*4]
+    push eax
+    push %1
+    call exception_handler
+    interrupt_leave
+    iret
+%endmacro
+
+%macro except_handler 1
+    interrupt_enter
+    mov eax, esp
+    push 0
+    push eax
+    push %1
+    call exception_handler
+    interrupt_leave
+    iret
 %endmacro
 
 section .text

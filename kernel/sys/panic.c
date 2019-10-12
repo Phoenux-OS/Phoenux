@@ -26,7 +26,13 @@ void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...) {
                            regs->ebp,
                            regs->esp);
         kprint(KPRN_PANIC, "  EIP: %8x  EFLAGS: %8x", regs->eip, regs->eflags);
-        kprint(KPRN_PANIC, "  CS:  %4x  SS: %4x", regs->cs, regs->ss);
+        kprint(KPRN_PANIC, "  CS: %4x SS: %4x DS: %4x ES: %4x FS: %4x GS: %4x",
+                           regs->cs,
+                           regs->ss,
+                           regs->ds,
+                           regs->es,
+                           regs->fs,
+                           regs->gs);
     }
 
     if (print_trace)
