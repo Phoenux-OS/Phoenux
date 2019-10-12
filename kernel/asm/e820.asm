@@ -1,5 +1,3 @@
-extern real_routine
-
 global get_e820
 
 section .data
@@ -21,7 +19,7 @@ get_e820:
     mov ebx, dword [esp+16]
     mov esi, e820_bin
     mov ecx, e820_size
-    call real_routine
+    int 0x48
 
     pop ecx
     pop esi

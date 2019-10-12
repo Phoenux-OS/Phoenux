@@ -42,4 +42,6 @@ void exc_simd_fp_handler(void);
 void exc_virt_handler(void);
 void exc_security_handler(void);
 
+void real_routine(void);
+
 #endif

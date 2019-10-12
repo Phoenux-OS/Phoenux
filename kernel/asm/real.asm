@@ -14,6 +14,15 @@ real_routine:
     ; ESI = routine location
     ; ECX = routine size
     pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
     push esi
     push ecx
@@ -33,5 +42,9 @@ real_routine:
     ; Call module
     call 0x1000
 
+    pop gs
+    pop fs
+    pop es
+    pop ds
     popa
-    ret
+    iret

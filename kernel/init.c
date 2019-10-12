@@ -13,15 +13,13 @@ void kernel_init(void) {
 
     load_gdt();
     init_idt();
+    go_to_ring1();
 
     init_vga_textmode();
 
     kprint(KPRN_INFO, "Welcome to Phoenux");
 
     init_e820();
-
-    go_to_ring1();
-    // no real mode stuff after this
 
     init_pmm();
 
