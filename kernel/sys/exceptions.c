@@ -58,6 +58,10 @@ static const char *exception_names[] = {
 };
 
 void exception_handler(int exception, struct regs_t *regs, size_t error_code) {
-    // this is a kernel exception/unhandled exception, ouch!
-    panic(regs, "%s (%x), error code: %x", exception_names[exception], exception, error_code);
+    if (regs->cs == 0x19) {
+        // this is a kernel exception/unhandled exception, ouch!
+        panic(regs, true, "%s (%x), error code: %x", exception_names[exception], exception, error_code);
+    } else {
+        panic(regs, false, "%s (%x), error code: %x", exception_names[exception], exception, error_code);
+    }
 }

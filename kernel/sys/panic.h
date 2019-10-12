@@ -3,8 +3,9 @@
 
 #include <stddef.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <sys/cpu.h>
 
-void panic(struct regs_t *regs, const char *fmt, ...);
+void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...);
 
 #endif

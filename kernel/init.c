@@ -28,5 +28,5 @@ void kernel_init(void) {
     asm volatile (
         "ud2"
     );
-    panic(NULL, "Nothing to do");
+    panic(NULL, true, "Nothing to do");
 }

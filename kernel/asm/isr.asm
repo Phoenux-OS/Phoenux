@@ -33,7 +33,6 @@ extern exception_handler
     push dword [esp+20*4]
     push eax
     push %1
-    xor ebp, ebp
     call exception_handler
     popam
     iret
@@ -45,7 +44,6 @@ extern exception_handler
     push 0
     push eax
     push %1
-    xor ebp, ebp
     call exception_handler
     popam
     iret

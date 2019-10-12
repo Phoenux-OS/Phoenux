@@ -12,19 +12,19 @@ char *trace_address(size_t *off, size_t addr) {
     }
 }
 
-void print_stacktrace(void) {
+void print_stacktrace(int type) {
     size_t *base_ptr;
     asm volatile (
         "mov %0, ebp;"
         : "=r"(base_ptr)
     );
-    kprint(KPRN_INFO, "Stacktrace:");
+    kprint(type, "Stacktrace:");
     for (;;) {
         size_t old_bp = base_ptr[0];
         size_t ret_addr = base_ptr[1];
         size_t off;
         char *name = trace_address(&off, ret_addr);
-        kprint(KPRN_INFO, "  [%x] <%s+%x>", ret_addr, name, off);
+        kprint(type, "  [%x] <%s+%x>", ret_addr, name, off);
         if (!old_bp)
             break;
         base_ptr = (void*)old_bp;
