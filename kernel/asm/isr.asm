@@ -1,26 +1,26 @@
-; Exception handlers.
-global exc_div0_handler
-global exc_debug_handler
-global exc_nmi_handler
-global exc_breakpoint_handler
-global exc_overflow_handler
-global exc_bound_range_handler
-global exc_inv_opcode_handler
-global exc_no_dev_handler
-global exc_double_fault_handler
-global exc_inv_tss_handler
-global exc_no_segment_handler
-global exc_ss_fault_handler
-global exc_gpf_handler
-global exc_page_fault_handler
-global exc_x87_fp_handler
-global exc_alignment_check_handler
-global exc_machine_check_handler
-global exc_simd_fp_handler
-global exc_virt_handler
-global exc_security_handler
+; Exception handler_s.
+global exc_div0_handler_
+global exc_debug_handler_
+global exc_nmi_handler_
+global exc_breakpoint_handler_
+global exc_overflow_handler_
+global exc_bound_range_handler_
+global exc_inv_opcode_handler_
+global exc_no_dev_handler_
+global exc_double_fault_handler_
+global exc_inv_tss_handler_
+global exc_no_segment_handler_
+global exc_ss_fault_handler_
+global exc_gpf_handler_
+global exc_page_fault_handler_
+global exc_x87_fp_handler_
+global exc_alignment_check_handler_
+global exc_machine_check_handler_
+global exc_simd_fp_handler_
+global exc_virt_handler_
+global exc_security_handler_
 
-extern exception_handler
+extern exception_handler_
 
 %macro interrupt_enter 0
     cld
@@ -70,7 +70,7 @@ extern exception_handler
     push dword [esp+20*4]
     push eax
     push %1
-    call exception_handler
+    call exception_handler_
     interrupt_leave
     iret
 %endmacro
@@ -81,52 +81,51 @@ extern exception_handler
     push 0
     push eax
     push %1
-    call exception_handler
+    call exception_handler_
     interrupt_leave
     iret
 %endmacro
 
-section .text
-bits 32
+segment CODE class=CODE use32
 
-; Exception handlers
-exc_div0_handler:
+; Exception handler_s
+exc_div0_handler_:
     except_handler 0x0
-exc_debug_handler:
+exc_debug_handler_:
     except_handler 0x1
-exc_nmi_handler:
+exc_nmi_handler_:
     except_handler 0x2
-exc_breakpoint_handler:
+exc_breakpoint_handler_:
     except_handler 0x3
-exc_overflow_handler:
+exc_overflow_handler_:
     except_handler 0x4
-exc_bound_range_handler:
+exc_bound_range_handler_:
     except_handler 0x5
-exc_inv_opcode_handler:
+exc_inv_opcode_handler_:
     except_handler 0x6
-exc_no_dev_handler:
+exc_no_dev_handler_:
     except_handler 0x7
-exc_double_fault_handler:
+exc_double_fault_handler_:
     except_handler_err_code 0x8
-exc_inv_tss_handler:
+exc_inv_tss_handler_:
     except_handler_err_code 0xa
-exc_no_segment_handler:
+exc_no_segment_handler_:
     except_handler_err_code 0xb
-exc_ss_fault_handler:
+exc_ss_fault_handler_:
     except_handler_err_code 0xc
-exc_gpf_handler:
+exc_gpf_handler_:
     except_handler_err_code 0xd
-exc_page_fault_handler:
+exc_page_fault_handler_:
     except_handler_err_code 0xe
-exc_x87_fp_handler:
+exc_x87_fp_handler_:
     except_handler 0x10
-exc_alignment_check_handler:
+exc_alignment_check_handler_:
     except_handler_err_code 0x11
-exc_machine_check_handler:
+exc_machine_check_handler_:
     except_handler 0x12
-exc_simd_fp_handler:
+exc_simd_fp_handler_:
     except_handler 0x13
-exc_virt_handler:
+exc_virt_handler_:
     except_handler 0x14
-exc_security_handler:
+exc_security_handler_:
     except_handler_err_code 0x1e

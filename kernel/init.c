@@ -23,8 +23,5 @@ void kernel_init(void) {
 
     init_pmm();
 
-    asm volatile (
-        "ud2"
-    );
     panic(NULL, true, "Nothing to do");
 }

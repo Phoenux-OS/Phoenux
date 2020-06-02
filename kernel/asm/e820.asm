@@ -1,22 +1,20 @@
-global get_e820
+global get_e820_
 
-section .data
+segment DATA class=DATA use32
 
 %define e820_size           e820_end - e820_bin
 e820_bin:                   incbin "real/e820.bin"
 e820_end:
 
-section .text
+segment CODE class=CODE use32
 
-bits 32
-
-get_e820:
+get_e820_:
     ; void get_e820(e820_entry_t *e820_map);
     push ebx
     push esi
     push ecx
 
-    mov ebx, dword [esp+16]
+    mov ebx, eax
     mov esi, e820_bin
     mov ecx, e820_size
     int 0x48

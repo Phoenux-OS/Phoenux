@@ -126,20 +126,20 @@ static void kprn_x(char *kprint_buf, size_t *kprint_buf_i, uint64_t x, int pad) 
 static void print_header(char *kprint_buf, size_t *kprint_buf_i, int type) {
     switch (type) {
         case KPRN_INFO:
-            kputs(kprint_buf, kprint_buf_i, "\e[36minfo\e[37m: ");
+            kputs(kprint_buf, kprint_buf_i, "\x1b[36minfo\x1b[37m: ");
             break;
         case KPRN_WARN:
-            kputs(kprint_buf, kprint_buf_i, "\e[33mwarning\e[37m: ");
+            kputs(kprint_buf, kprint_buf_i, "\x1b[33mwarning\x1b[37m: ");
             break;
         case KPRN_ERR:
-            kputs(kprint_buf, kprint_buf_i, "\e[31mERROR\e[37m: ");
+            kputs(kprint_buf, kprint_buf_i, "\x1b[31mERROR\x1b[37m: ");
             break;
         case KPRN_PANIC:
-            kputs(kprint_buf, kprint_buf_i, "\e[31mPANIC\e[37m: ");
+            kputs(kprint_buf, kprint_buf_i, "\x1b[31mPANIC\x1b[37m: ");
             break;
         default:
         case KPRN_DBG:
-            kputs(kprint_buf, kprint_buf_i, "\e[36mDEBUG\e[37m: ");
+            kputs(kprint_buf, kprint_buf_i, "\x1b[36mDEBUG\x1b[37m: ");
             break;
     }
 }

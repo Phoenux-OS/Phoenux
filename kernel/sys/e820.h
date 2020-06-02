@@ -8,7 +8,7 @@ typedef struct {
     uint64_t length;
     uint32_t type;
     uint32_t unused;
-} __attribute__((packed)) e820_entry_t;
+} e820_entry_t;
 
 extern uint64_t memory_size;
 extern e820_entry_t e820_map[256];

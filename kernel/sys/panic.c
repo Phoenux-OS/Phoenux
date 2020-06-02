@@ -1,11 +1,10 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <lib/kprint.h>
-#include <sys/trace.h>
 #include <sys/panic.h>
 
 void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...) {
-    asm volatile ("cli");
+    _asm { CLI };
 
     va_list args;
     va_start(args, fmt);
@@ -13,7 +12,7 @@ void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...) {
     kvprint(KPRN_PANIC, fmt, args);
     va_end(args);
 
-    if (regs) {
+    if (regs != NULL) {
         kprint(KPRN_PANIC, "CPU status at fault:");
         kprint(KPRN_PANIC, "  EAX: %8x  EBX: %8x  ECX: %8x  EDX: %8x",
                            regs->eax,
@@ -35,8 +34,8 @@ void panic(struct regs_t *regs, bool print_trace, const char *fmt, ...) {
                            regs->gs);
     }
 
-    if (print_trace)
-        print_stacktrace(KPRN_PANIC);
-
-    asm volatile ("hlt");
+    _asm {
+        die:
+        JMP die
+    }
 }

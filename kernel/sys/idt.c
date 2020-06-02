@@ -4,6 +4,8 @@
 
 static struct idt_entry_t idt[256];
 
+void idt_load(void*);
+
 void init_idt(void) {
     /* Register all interrupts */
 /*
@@ -40,11 +42,7 @@ void init_idt(void) {
         (uint32_t)idt
     };
 
-    asm volatile (
-        "lidt %0"
-        :
-        : "m" (idt_ptr)
-    );
+    idt_load(&idt_ptr);
 }
 
 void register_interrupt_handler(size_t vec, void (*handler)(void), uint8_t type) {

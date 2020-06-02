@@ -1,16 +1,14 @@
-global real_routine
+global real_routine_
 
-section .data
+segment DATA class=DATA use32
 
 %define real_init_size  real_init_end - real_init
 real_init:              incbin "real/real_init.bin"
 real_init_end:
 
-section .text
+segment CODE class=CODE use32
 
-bits 32
-
-real_routine:
+real_routine_:
     ; ESI = routine location
     ; ECX = routine size
     pusha
@@ -40,7 +38,8 @@ real_routine:
     rep movsb
 
     ; Call module
-    call 0x1000
+    mov edi, 0x1000
+    call edi
 
     pop gs
     pop fs

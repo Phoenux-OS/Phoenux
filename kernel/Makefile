@@ -1,43 +1,36 @@
-CC      = i686-phoenux-gcc
+CC      = owcc
 AS      = nasm
-PREFIX  = /
 CFLAGS  = -O2 -Wall -Wextra
-LDFLAGS =
 
-C_FILES     := $(shell find . -type f -name '*.c')
-ASM_FILES   := $(shell find . -type f -name '*.asm')
-REAL_FILES  := $(shell find . -type f -name '*.real')
-OBJ         := $(C_FILES:.c=.o) $(ASM_FILES:.asm=.o)
+C_FILES     := $(shell find . -type f -name '*.c' | sort)
+ASM_FILES   := $(shell find . -type f -name '*.asm' | sort)
+REAL_FILES  := $(shell find . -type f -name '*.real' | sort)
+OBJ         := $(ASM_FILES:.asm=.obj) $(C_FILES:.c=.obj)
 BINS        := $(REAL_FILES:.real=.bin)
 
-CHARDFLAGS  := -std=gnu99 -masm=intel -fno-pic -mno-sse -mno-sse2 -ffreestanding -fno-stack-protector -fno-omit-frame-pointer -I.
-LDHARDFLAGS := -no-pie -nostdlib -lgcc -static-libgcc -T ./linker.ld
+CHARDFLAGS  := -std=c99 -fpack-struct=1 -fno-stack-check -I.
 
-phoenux.bin: phoenux.elf
-	./gensyms.sh
-	$(CC) -x c $(CHARDFLAGS) $(CFLAGS) -c symlist.gen -o symlist.o
-	$(CC) $(OBJ) symlist.o $(LDHARDFLAGS) -Wl,--oformat=binary $(LDFLAGS) -o $@
+phoenux.bin: $(BINS) $(OBJ)
+	echo 'name phoenux.bin'                >  linker
+	echo 'output raw'                      >> linker
+	echo '    offset=0x100000'             >> linker
+	echo 'option nodefaultlibs'            >> linker
+	for i in $(OBJ); do printf 'file %s\n' $$i >> linker; done
+	echo 'order'                           >> linker
+	echo '    clname STRT offset=0x100000' >> linker
+	echo '    clname CODE'                 >> linker
+	echo '    clname DATA'                 >> linker
+	wlink                                  <  linker
+	rm linker
 
-phoenux.elf: $(BINS) $(OBJ) symlist.o
-	$(CC) $(OBJ) symlist.o $(LDHARDFLAGS) $(LDFLAGS) -o $@
-
-symlist.o:
-	echo '#include <symlist.h>' > symlist.gen
-	echo 'struct symlist_t symlist[] = {{0xffffffff,""}};' >> symlist.gen
-	$(CC) -x c $(CHARDFLAGS) $(CFLAGS) -c symlist.gen -o symlist.o
-
-%.o: %.c
+%.obj: %.c
 	$(CC) $(CHARDFLAGS) $(CFLAGS) -c $< -o $@
 
 %.bin: %.real
 	$(AS) $< -f bin -o $@
 
-%.o: %.asm
-	$(AS) $< -f elf32 -o $@
+%.obj: %.asm
+	$(AS) $< -f obj -o $@
 
 clean:
 	rm -f $(OBJ) $(BINS) phoenux.bin
-
-install:
-	mkdir -p $(PREFIX)
-	cp phoenux.bin $(PREFIX)/

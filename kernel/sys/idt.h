@@ -15,7 +15,7 @@ struct idt_entry_t {
 struct idt_ptr_t {
     uint16_t size;
     uint32_t address;
-} __attribute((packed));
+};
 
 void init_idt(void);
 void register_interrupt_handler(size_t, void (*)(void), uint8_t);

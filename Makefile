@@ -8,7 +8,8 @@ all: phoenux.img
 
 root/phoenux.bin:
 	$(MAKE) -C kernel
-	$(MAKE) -C kernel PREFIX=$(SYSROOT) install
+	mkdir -p root
+	cp kernel/phoenux.bin root/
 
 clean:
 	$(MAKE) clean -C kernel

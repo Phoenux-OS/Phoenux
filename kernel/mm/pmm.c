@@ -16,13 +16,13 @@ static volatile uint32_t *tmp_bitmap;
 // the initial bitmap is 1 page aka PAGE_SIZE * 8 entries
 static size_t bitmap_entries = PAGE_SIZE * 8;
 
-__attribute__((always_inline)) static inline int read_bitmap(size_t i) {
+static inline int read_bitmap(size_t i) {
     i -= BITMAP_BASE;
 
     return test_bit(mem_bitmap, i);
 }
 
-__attribute__((always_inline)) static inline void set_bitmap(size_t i, size_t count) {
+static inline void set_bitmap(size_t i, size_t count) {
     i -= BITMAP_BASE;
 
     size_t f = i + count;
@@ -30,7 +30,7 @@ __attribute__((always_inline)) static inline void set_bitmap(size_t i, size_t co
         set_bit(mem_bitmap, j);
 }
 
-__attribute__((always_inline)) static inline void unset_bitmap(size_t i, size_t count) {
+static inline void unset_bitmap(size_t i, size_t count) {
     i -= BITMAP_BASE;
 
     size_t f = i + count;
@@ -69,7 +69,7 @@ void init_pmm(void) {
             if (addr < (MEMORY_BASE + PAGE_SIZE /* bitmap */))
                 continue;
 
-            if (addr > 0xffffffff)
+            if (addr > 0xffffffffllu)
                 continue;
 
             if (addr >= (MEMORY_BASE + bitmap_entries * PAGE_SIZE)) {

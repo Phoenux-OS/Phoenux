@@ -1,5 +1,5 @@
 /phoenux.img
-/**/*.o
+/**/*.obj
 /**/*.bin
 /**/*.elf
 /bochsout.txt
