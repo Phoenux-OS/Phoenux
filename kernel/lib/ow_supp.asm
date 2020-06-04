@@ -1,4 +1,4 @@
-segment CODE class=CODE use32
+segment _TEXT class=CODE use32
 
 global __U8D
 __U8D:

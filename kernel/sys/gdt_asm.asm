@@ -1,12 +1,9 @@
-segment CODE class=CODE use32
+segment _TEXT class=CODE use32
 
 global gdt_load_
 gdt_load_:
     lgdt [eax]
-    mov eax, .ret
-    push 0x08
-    push eax
-    retf
+    jmp 0x08:.ret
   .ret:
     mov ax, 0x10
     mov ds, ax
@@ -28,8 +25,7 @@ go_to_ring1_:
     or eax, 1 << 12
     push eax
     push 0x19
-    mov eax, .ret
-    push eax
+    push .ret
     iret
   .ret:
     mov ax, 0x21

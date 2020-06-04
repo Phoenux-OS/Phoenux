@@ -1,7 +1,7 @@
 global _tss
 global _tss_size
 
-segment DATA class=DATA use32
+segment _DATA class=DATA use32
 
 align 4
 _tss:

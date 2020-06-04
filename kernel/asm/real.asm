@@ -1,12 +1,12 @@
 global real_routine_
 
-segment DATA class=DATA use32
+segment _DATA class=DATA use32
 
 %define real_init_size  real_init_end - real_init
 real_init:              incbin "real/real_init.bin"
 real_init_end:
 
-segment CODE class=CODE use32
+segment _TEXT class=CODE use32
 
 real_routine_:
     ; ESI = routine location

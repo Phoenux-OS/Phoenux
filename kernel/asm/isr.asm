@@ -86,7 +86,7 @@ extern exception_handler_
     iret
 %endmacro
 
-segment CODE class=CODE use32
+segment _TEXT class=CODE use32
 
 ; Exception handler_s
 exc_div0_handler_:

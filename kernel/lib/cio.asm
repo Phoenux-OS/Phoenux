@@ -1,4 +1,4 @@
-segment CODE class=CODE use32
+segment _TEXT class=CODE use32
 
 global port_out_b_
 port_out_b_:
