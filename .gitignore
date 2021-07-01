@@ -3,5 +3,6 @@
 /**/*.bin
 /**/*.elf
 /bochsout.txt
-/root
+/limine
+/root/boot
 /bx_enh_dbg.ini

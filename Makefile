@@ -6,20 +6,24 @@ SYSROOT := $(CUR_DIR)/root
 
 all: phoenux.img
 
+limine:
+	git clone https://github.com/limine-bootloader/limine.git --branch=v2.0-branch-binary --depth=1
+	make -C limine
+
 root/phoenux.bin:
 	$(MAKE) -C kernel
-	mkdir -p root
-	cp kernel/phoenux.bin root/
+	mkdir -p root/boot
+	cp kernel/phoenux.bin root/boot/
 
 clean:
 	$(MAKE) clean -C kernel
 	rm -f root/phoenux.bin
 
-phoenux.img: root/phoenux.bin
-	nasm bootloader/bootloader.asm -f bin -o phoenux.img
-	dd bs=32768 count=0 seek=8192 if=/dev/zero of=phoenux.img
-	echfs-utils phoenux.img format 512
-	./copy-root-to-img.sh root phoenux.img
+phoenux.img: limine root/phoenux.bin
+	mkdir -p root/boot
+	cp limine/limine.sys root/boot/
+	./dir2echfs -f phoenux.img 64 root
+	limine/limine-install phoenux.img
 
 run: phoenux.img
 	qemu-system-x86_64 -monitor stdio -net none -m 2G -enable-kvm -hda phoenux.img
