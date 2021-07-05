@@ -30,4 +30,4 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -rf 3rdparty build kernel/*.xbstrap
-	rm -rf sysroot/usr sysroot/etc/xbstrap
+	rm -rf sysroot/usr sysroot/etc/xbstrap sysroot/boot/limine.sys sysroot/boot/phoenux.bin
