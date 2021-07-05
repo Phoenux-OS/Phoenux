@@ -1,29 +1,20 @@
-CUR_DIR := $(shell pwd)
-PATH    := $(CUR_DIR)/toolchain/cross-root/bin:$(PATH)
-SYSROOT := $(CUR_DIR)/root
-
-.PHONY: all clean run
-
+.PHONY: all
 all: phoenux.img
 
-limine:
-	git clone https://github.com/limine-bootloader/limine.git --branch=v2.0-branch-binary --depth=1
-	make -C limine
+.PHONY: distro
+distro:
+	mkdir -p build 3rdparty
+	cd build && ln -s ../sysroot system-root && xbstrap init ..
+	cd build && xbstrap install --all
 
-root/phoenux.bin:
-	$(MAKE) -C kernel
-	mkdir -p root/boot
-	cp kernel/phoenux.bin root/boot/
+.PHONY: kernel/phoenux.bin
+kernel/phoenux.bin:
+	cd build && xbstrap install --rebuild kernel
 
-clean:
-	$(MAKE) clean -C kernel
-	rm -f root/phoenux.bin
-
-phoenux.img: limine root/phoenux.bin
-	mkdir -p root/boot
-	cp limine/limine.sys root/boot/
-	./dir2echfs -f phoenux.img 64 root
-	limine/limine-install phoenux.img
+phoenux.img: kernel/phoenux.bin
+	cp ./build/tools/host-limine/share/limine/limine.sys kernel/phoenux.bin sysroot/boot/
+	./dir2echfs -f phoenux.img 64 sysroot
+	./build/tools/host-limine/bin/limine-install phoenux.img
 
 run: phoenux.img
 	qemu-system-x86_64 -monitor stdio -net none -m 2G -enable-kvm -hda phoenux.img
@@ -31,8 +22,12 @@ run: phoenux.img
 run-nokvm: phoenux.img
 	qemu-system-x86_64 -monitor stdio -net none -m 2G -hda phoenux.img
 
-# Various ports
+.PHONY: clean
+clean:
+	rm -f phoenux.img
+	$(MAKE) -C kernel clean
 
-bash:
-	$(MAKE) -C ports/bash
-	$(MAKE) -C ports/bash DESTDIR=$(SYSROOT) install
+.PHONY: distclean
+distclean: clean
+	rm -rf 3rdparty build kernel/*.xbstrap
+	rm -rf sysroot/usr sysroot/etc/xbstrap
