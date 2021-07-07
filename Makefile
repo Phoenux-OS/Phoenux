@@ -17,7 +17,7 @@ phoenux.img: kernel/phoenux.bin
 	./build/tools/host-limine/bin/limine-install phoenux.img
 
 run: phoenux.img
-	qemu-system-x86_64 -monitor stdio -net none -m 2G -enable-kvm -hda phoenux.img
+	qemu-system-x86_64 -net none -m 2G -serial stdio -enable-kvm -hda phoenux.img
 
 run-nokvm: phoenux.img
 	qemu-system-x86_64 -monitor stdio -net none -m 2G -hda phoenux.img

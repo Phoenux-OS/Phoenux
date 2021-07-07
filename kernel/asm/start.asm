@@ -2,25 +2,28 @@ extern kernel_init_
 extern _edata
 extern _end
 
-segment _STRT class=STRT use32
+segment _BSS class=BSS use32
 
-global _start
-_start:
-    mov esp, 0xeefff0
-    xor ebp, ebp
-    call kernel_init_
-  .die:
-    cli
-    hlt
-    jmp .die
+stack:
+    resb 8192
+.top:
+
+segment _DATA class=DATA use32
 
 align 16
-multiboot_header:
-    .magic dd 0x1badb002
-    .flags dd 0x00010000
-    .checksum dd -(0x1badb002 + 0x00010000)
-    .header_addr dd multiboot_header
-    .load_addr dd 0x200000
-    .load_end_addr dd _edata
-    .bss_end_addr dd _end
-    .entry_addr dd _start
+stivalehdr:
+    dq stack.top
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dq kernel_init_
+
+align 16
+stivale_anchor:
+    db 'STIVALE1 ANCHOR'
+    db 32
+    dq 0x200000
+    dq _edata
+    dq _end
+    dq stivalehdr

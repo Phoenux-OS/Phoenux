@@ -14,11 +14,10 @@ phoenux.bin: $(BINS) $(OBJ)
 	echo 'name phoenux.bin'               				>  linker
 	echo 'output raw'                      				>> linker
 	echo '    offset=0x200000'            			    >> linker
-	echo 'option nodefaultlibs,start=_start'            >> linker
+	echo 'option nodefaultlibs,start=kernel_init_'      >> linker
 	for i in $(OBJ); do printf 'file %s\n' $$i			>> linker; done
 	echo 'order'                           				>> linker
-	echo '    clname STRT offset=0x200000' 				>> linker
-	echo '    clname CODE'                 				>> linker
+	echo '    clname CODE offset=0x200000'        		>> linker
 	echo '    clname DATA'                 				>> linker
 	wlink                                  				<  linker
 	rm linker
