@@ -2,18 +2,17 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <lib/kprint.h>
+#include <drv/com.h>
 
-
-#include <drv/vga_textmode.h>
 
 static void kprint_buf_flush(char *kprint_buf, size_t *kprint_buf_i) {
     for (size_t i = 0; i < *kprint_buf_i; i++)
-        text_putchar(kprint_buf[i]);
+        com_out(kprint_buf[i]);
 }
 
 static void kprint_buf_flush_urgent(char *kprint_buf, size_t *kprint_buf_i) {
     for (size_t i = 0; i < *kprint_buf_i; i++)
-        text_putchar(kprint_buf[i]);
+        com_out(kprint_buf[i]);
 }
 
 

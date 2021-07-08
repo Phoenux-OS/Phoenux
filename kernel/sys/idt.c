@@ -35,8 +35,6 @@ void init_idt(void) {
     /* 0x15 .. 0x1d resv. */
     register_interrupt_handler(0x1e, exc_security_handler, 0x8e);
 
-    register_interrupt_handler(0x48, real_routine, 0xae);
-
     struct idt_ptr_t idt_ptr = {
         sizeof(idt) - 1,
         (uint32_t)idt
